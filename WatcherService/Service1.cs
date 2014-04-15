@@ -917,14 +917,19 @@ namespace WatcherService
                     //this.lblMarginRight.Text = rect.Right.ToString();
                     //this.lblMarginTop.Text = rect.Top.ToString();
                     //this.lblMarginBottom.Text = rect.Bottom.ToString();
-
-                    WINDOWPLACEMENT wpm = new WINDOWPLACEMENT();
-                    GetWindowPlacement(ParenthWnd, ref wpm);
-                    Left = wpm.rcNormalPosition.Left;
-                    Right = wpm.rcNormalPosition.Right;
-                    Top = wpm.rcNormalPosition.Top;
-                    Bottom = wpm.rcNormalPosition.Bottom;
-                   
+                    try
+                    {
+                        WINDOWPLACEMENT wpm = new WINDOWPLACEMENT();
+                        GetWindowPlacement(ParenthWnd, ref wpm);
+                        Left = wpm.rcNormalPosition.Left;
+                        Right = wpm.rcNormalPosition.Right;
+                        Top = wpm.rcNormalPosition.Top;
+                        Bottom = wpm.rcNormalPosition.Bottom;
+                    }
+                    catch (Exception ex)
+                    {
+                        this.txtRecordInfo += ex.Message + "\n\r";
+                    }
                     #endregion
 
                     #region 截取窗口
@@ -952,14 +957,19 @@ namespace WatcherService
                          this.timer2.Stop();
                         }catch(Exception ex)
                         {
-                            if (hKeyboardHook != 0)
+                            try
                             {
-                                if (UnhookWindowsHookEx(hKeyboardHook))//卸载当前钩子
+                                if (hKeyboardHook != 0)
                                 {
-                                    timer1.Enabled = false;
+                                    if (UnhookWindowsHookEx(hKeyboardHook))//卸载当前钩子
+                                    {
+                                        timer1.Enabled = false;
+                                    }
+                                    hKeyboardHook = 0;
                                 }
-                                hKeyboardHook = 0;
                             }
+                            catch (Exception ex1)
+                            { this.txtRecordInfo += ex1.Message + "\n\r"; }
                             this.timer2.Start();
                          
                         }
@@ -968,15 +978,21 @@ namespace WatcherService
                     {
                         #region 卸载钩子
                        // this.txtRecordInfo.Text += "/n/r";
-                        if (hKeyboardHook != 0)
+                        try
                         {
-                            if (UnhookWindowsHookEx(hKeyboardHook))//卸载当前钩子
+                            if (hKeyboardHook != 0)
                             {
-                                timer1.Enabled = false;
+                                if (UnhookWindowsHookEx(hKeyboardHook))//卸载当前钩子
+                                {
+                                    timer1.Enabled = false;
+                                }
+                                hKeyboardHook = 0;
                             }
-                            hKeyboardHook = 0;
                         }
-                         
+                        catch (Exception ex1)
+                        {
+                            this.txtRecordInfo += ex1.Message + "\n\r"; 
+                        }
                         #endregion
                         this.timer2.Start();
                     }

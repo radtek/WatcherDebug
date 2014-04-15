@@ -13,6 +13,9 @@ namespace Watcher
         [STAThread]
         static void Main()
         {
+            System.Threading.Mutex mutexMyapplication = new System.Threading.Mutex(false, "Watcher");
+            if (!mutexMyapplication.WaitOne(100, false))
+                return;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new  KeyRecord());

